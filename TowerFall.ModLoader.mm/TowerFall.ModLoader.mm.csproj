@@ -35,8 +35,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\Microsoft.Xna.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553" />
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Microsoft.Xna.Framework.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Microsoft.Xna.Framework.Graphics.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Cecil, Version=0.11.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\MonoMod\Mono.Cecil.dll</HintPath>
@@ -51,8 +57,7 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="TowerFall">
-      <HintPath>..\..\TowerFall.exe</HintPath>
-      <Private>False</Private>
+      <HintPath>..\libs\TowerFall.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
