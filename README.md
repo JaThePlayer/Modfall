@@ -12,7 +12,7 @@ A mod loader for the game TowerFall Ascension, powered by Monomod (https://githu
 
 # Installing the mod loader
 Drop the files from the MonoMod directory and the TowerFall.ModLoader.mm.dll into your Towerfall directory, then in cmd/terminal/whatever type in:
-MonoMod.exe TowerFall.exe
+MonoMod.exe TowerFall.exe ,then run
 MonoMod.RuntimeDetour.HookGen.exe TowerFall.exe
 
 A MONOMODDED_TowerFall.exe should show up in your towerfall directory. Run it so it can create some files and directories
