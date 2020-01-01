@@ -23,4 +23,7 @@ An automated installer will be made for this later.
 # Installing mods
 To install a mod, simply drop the mod's folder into the Towerfall/Mods/ directory.
 
+# Example mods
+https://github.com/JaThePlayer/MoreCoOp - Adds more co-op maps to the game, based on the example workshop maps made by devs
+
 Please note that this mod loader is currently in a very early stage of development, so bugs might show up. Please report them so that they can be fixed.
