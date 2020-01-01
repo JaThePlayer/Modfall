@@ -76,6 +76,7 @@
     <Compile Include="Patches\ArrowHUD.cs" />
     <Compile Include="Patches\MainMenu.cs" />
     <Compile Include="NullMod.cs" />
+    <Compile Include="Patches\MatchVariants.cs" />
     <Compile Include="Patches\Pickup.cs" />
     <Compile Include="Patches\QuestLevelData.cs" />
     <Compile Include="Patches\QuestLevelSelectOverlay.cs" />

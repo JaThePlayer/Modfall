@@ -47,5 +47,11 @@ namespace TowerFall.ModLoader.mm
             }
             return index;
         }
+
+        public void RegisterVariant(Variant variant)
+        {
+            Logger.Log($"[Modfall] Registering Variant: {variant.Title}");
+            patch_MatchVariants.ModVariants.Add(variant);
+        }
     }
 }
