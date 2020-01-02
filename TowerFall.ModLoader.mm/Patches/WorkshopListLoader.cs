@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using TowerFall.ModLoader.mm;
 
+#pragma warning disable CS0626 // orig_ method is marked external and has no attributes on it.
+
 namespace TowerFall
 {
     class patch_WorkshopListLoader : WorkshopListLoader

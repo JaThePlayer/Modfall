@@ -11,9 +11,9 @@ namespace TowerFall.ModLoader.mm
     /// </summary>
     class NullMod : Mod
     {
-        public NullMod(string name)
+        public NullMod()
         {
-            Name = name;
+            //Data.Name = name;
         }
     }
 }

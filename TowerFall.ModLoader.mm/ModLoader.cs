@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml;
 using Mono;
+using Monocle;
 using TowerFall;
 
 namespace TowerFall.ModLoader.mm
@@ -31,7 +33,7 @@ namespace TowerFall.ModLoader.mm
         public static string PathMods { get; internal set; }
         public static string PathGame = Path.GetDirectoryName(typeof(TFGame).Assembly.Location);
 
-        public static void LoadModAssembly(Assembly asm, string modName)
+        public static void LoadModAssembly(Assembly asm, ModData modData)
         {
             Type[] types;
             try
@@ -42,7 +44,7 @@ namespace TowerFall.ModLoader.mm
             catch (Exception e)
             {
                 Logger.Log($"Failed reading assembly: {e}");
-                Errors.Add($"{asm.FullName} threw an exception when loading: {e}");
+                Errors.Add($"{modData.Name} threw an exception when loading: {e}");
                 return;
             }
             for (int i = 0; i < types.Length; i++)
@@ -51,7 +53,7 @@ namespace TowerFall.ModLoader.mm
                 if (typeof(Mod).IsAssignableFrom(type))
                 {
                     var mod = (Mod)type.GetConstructor(_EmptyTypeArray).Invoke(_EmptyObjectArray);
-                    mod.Name = modName;
+                    mod.Data = modData;
                     Mods.Add(mod);
                 }
             }
@@ -98,6 +100,7 @@ namespace TowerFall.ModLoader.mm
                 }
             } else
             {
+                Logger.Log("[Modfall] Creating blacklist.txt");
                 string text = $"# This is the blacklist. Type in the names of directories you don't want to load mods from here, seperated by ; {Environment.NewLine}# Lines starting with # are ignored, though they still need to end with ;";
                 File.WriteAllText(Path.Combine(PathMods, "blacklist.txt"), text);
             }
@@ -110,7 +113,7 @@ namespace TowerFall.ModLoader.mm
 
             foreach (Mod mod in Mods)
             {
-                Logger.Log($"[Modfall] Initializing Mod: {mod.Name}");
+                Logger.Log($"[Modfall] Initializing Mod: {mod.Data.Name}");
                 mod.Load();
             }
 
@@ -119,16 +122,16 @@ namespace TowerFall.ModLoader.mm
         public static void LoadDir(string path)
         {
             ModData modData = GetModData(path);
-            string modName = modData.name;
+            string modName = modData.Name;
             Logger.Log($"[Modfall] Loading Mod: {modName}");
             ModPaths.Add(modName, path);
             ModPathsInv.Add(path, modName);
             // Code mods
-            if (!string.IsNullOrEmpty(modData.dll))
+            if (!string.IsNullOrEmpty(modData.DLL))
             {
                 try
                 {
-                    LoadModAssembly(Assembly.LoadFile(Path.Combine(path, modData.dll) + ".dll"), modName);
+                    LoadModAssembly(Assembly.LoadFile(Path.Combine(path, modData.DLL) + ".dll"), modData);
                 }
                 catch (Exception ex)
                 {
@@ -138,7 +141,9 @@ namespace TowerFall.ModLoader.mm
             } else
             {
                 // No dll, so make a null module
-                Mods.Add(new NullMod(modName));
+                Mod mod = new NullMod();
+                mod.Data = modData;
+                Mods.Add(mod);
             }
             // Graphics
             // Atlases
@@ -178,24 +183,49 @@ namespace TowerFall.ModLoader.mm
         public static ModData GetModData(string modFolderPath)
         {
             Logger.Log($"[Modfall] Loading ModData from: {modFolderPath}");
-            string file = File.ReadAllText(Path.Combine(modFolderPath, "modfall.txt"));
+            
             ModData data = new ModData();
-            string[] entries = file.Split(';');
-            foreach (string entry in entries)
-            {
-                string entry2 = entry.Trim();
-                if (!string.IsNullOrWhiteSpace(entry2))
-                ReadEntry(entry2);
-            }
-            return data;
 
-            void ReadEntry(string entry)
+            // Failsafe if mod.xml doesn't specify version
+            data.Version = "1.0.0";
+            if (File.Exists(Path.Combine(modFolderPath, "modfall.txt")))
             {
-                string[] split = entry.Split(':');
-                string name = split[0].ToLower();
-                string value = split[1];
-                data.SetValue(name, value);
+                Logger.Log($"[Modfall] [WARN] The modfall.txt format is deprecated. Please switch to the .xml format!");
+                string file = File.ReadAllText(Path.Combine(modFolderPath, "modfall.txt"));
+                string[] entries = file.Split(';');
+                foreach (string entry in entries)
+                {
+                    string entry2 = entry.Trim();
+                    if (!string.IsNullOrWhiteSpace(entry2))
+                        ReadEntry(entry2);
+                }
+                
+
+                void ReadEntry(string entry)
+                {
+                    string[] split = entry.Split(':');
+                    string name = split[0].ToLower();
+                    string value = split[1];
+                    data.SetValue(name, value);
+                }
+                
             }
+            // No old .txt file, now look for new xml file
+            else if (File.Exists(Path.Combine(modFolderPath, "modfall.xml")))
+            {
+                XmlElement file = Calc.LoadXML(Path.Combine(modFolderPath, "modfall.xml"))["mod"];
+                foreach (XmlElement element in file.ChildNodes)
+                {
+                    // Read each entry
+                    data.SetValue(element.Name.ToLower(), element.InnerText);
+                }
+            } else
+            {
+                data.Name = Path.GetFileNameWithoutExtension(modFolderPath);
+                Logger.Log($"[Modfall] [WARN] Didn't find a modfall file! Assuming name {data.Name}!");
+            }
+
+            return data;
         }
     }
 }

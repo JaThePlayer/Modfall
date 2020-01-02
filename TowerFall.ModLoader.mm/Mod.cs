@@ -10,8 +10,9 @@ namespace TowerFall.ModLoader.mm
 {
     public class Mod
     {
-        public string Name;
-        public string Version = "1.0.0";
+        //public string Name;
+        //public string Version = "1.0.0";
+        public ModData Data;
         public virtual void Load()
         {
         }

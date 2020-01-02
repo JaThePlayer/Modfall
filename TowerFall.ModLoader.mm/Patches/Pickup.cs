@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0626 // orig_ method is marked external and has no attributes on it.
+
 namespace TowerFall
 {
     class patch_Pickup : Pickup

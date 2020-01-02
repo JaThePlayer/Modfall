@@ -223,7 +223,7 @@ namespace TowerFall
                 float nextHeight = 50f;
                 foreach (Mod mod in ModLoader.mm.ModLoader.Mods)
                 {
-                    Draw.Text(TFGame.Font, $"{mod.Name.ToUpper()} V{mod.Version.ToUpper()}", new Vector2(0f, nextHeight), Color.White);
+                    Draw.Text(TFGame.Font, $"{mod.Data.Name.ToUpper()} V{mod.Data.Version.ToUpper()}", new Vector2(0f, nextHeight), Color.White);
                     nextHeight += 10f;
                 }
                 BackState = MenuState.Main;

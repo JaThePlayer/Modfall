@@ -12,21 +12,28 @@ namespace TowerFall.ModLoader.mm
         /// <summary>
         /// The mod's name
         /// </summary>
-        public string name;
+        public string Name;
+        public string Version;
         /// <summary>
         /// Path to the dll relative to mod root
         /// </summary>
-        public string dll;
+        public string DLL;
 
         public void SetValue(string name, string value)
         {
             switch (name)
             {
                 case "name":
-                    this.name = value;
+                    Name = value;
                     break;
                 case "dll":
-                    dll = value.Replace('/', Path.DirectorySeparatorChar);
+                    DLL = value.Replace('/', Path.DirectorySeparatorChar);
+                    break;
+                case "version":
+                    Version = value;
+                    break;
+                default:
+                    Logger.Log($"[Modfall] Unknown ModData property: {name}");
                     break;
             }
 

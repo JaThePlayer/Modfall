@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using MonoMod;
 using TowerFall.ModLoader.mm;
 
+#pragma warning disable CS0626 // orig_ method is marked external and has no attributes on it.
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value null
+
 namespace TowerFall
 {
     class patch_MatchVariants : MatchVariants
@@ -29,13 +32,11 @@ namespace TowerFall
             {
                 Array.Resize(ref Variants, Variants.Length + 1);
                 Variants[Variants.Length - 1] = variant;
-                Logger.Log($"[Modfall] Adding variant {variant.Title} to MatchVariants");
                 if (variant.CanRandom)
                 {
                     canRandoms.Add(variant);
                 }
             }
-            LogVariants();
         }
 
     }
