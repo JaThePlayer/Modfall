@@ -55,7 +55,7 @@ namespace TowerFall
                     {
                         try
                         {
-                            Logger.Log("Trying to load:" + file2);
+                            Logger.Log("Loading map:" + file2);
                             patch_QuestLevelData data2 = (patch_QuestLevelData)GameData.QuestLevels[0];
                             QuestLevelData data = data2.DeepClone();
                             data.Path = file2;
@@ -85,7 +85,8 @@ namespace TowerFall
                             {
                                 data.Theme.Name = xmlElement.ChildText("title");
                             }
-                            else {
+                            else
+                            {
                                 data.Theme.Name = Path.GetFileNameWithoutExtension(file2).ToUpper() + " - " + ModLoader.mm.ModLoader.ModPathsInv[file].ToUpper();
                             }
 

@@ -62,17 +62,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events.cs" />
+    <Compile Include="Patches\Calc.cs" />
+    <Compile Include="Patches\EnemyArrowHUD.cs" />
     <Compile Include="Patches\MapButton.cs" />
     <Compile Include="Patches\MapScene.cs" />
     <Compile Include="ModArrow.cs" />
-    <Compile Include="ModAtlas.cs" />
     <Compile Include="ModData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="ModLoader.cs" />
     <Compile Include="ModPickup.cs" />
     <Compile Include="ModLoaderSettings.cs" />
-    <Compile Include="ModSpriteData.cs" />
     <Compile Include="Patches\Arrow.cs" />
     <Compile Include="Patches\ArrowHUD.cs" />
     <Compile Include="Patches\MainMenu.cs" />
@@ -81,7 +82,9 @@
     <Compile Include="Patches\Pickup.cs" />
     <Compile Include="Patches\QuestLevelData.cs" />
     <Compile Include="Patches\QuestLevelSelectOverlay.cs" />
+    <Compile Include="Patches\QuestSpawnPortal.cs" />
     <Compile Include="Patches\ScreenTitle.cs" />
+    <Compile Include="Patches\SpriteData.cs" />
     <Compile Include="Patches\TFGame.cs" />
     <Compile Include="Patches\TreasureChest.cs" />
     <Compile Include="Patches\TreasureSpawner.cs" />

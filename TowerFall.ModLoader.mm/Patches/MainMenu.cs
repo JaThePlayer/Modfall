@@ -210,7 +210,7 @@ namespace TowerFall
 
             //Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
             Draw.SpriteBatch.Begin();
-            Draw.Text(TFGame.Font, "MODFALL: V0.1", new Vector2(0f, 10f), Color.White);
+            Draw.Text(TFGame.Font, $"MODFALL: {ModLoader.mm.ModLoader.ModfallVersion.ToString()}", new Vector2(0f, 10f), Color.White);
             Draw.Text(TFGame.Font, $"MODS LOADED: {ModLoader.mm.ModLoader.Mods.Count}", new Vector2(0f, 20f), Color.White);
             if (ModLoader.mm.ModLoader.Errors.Count > 0)
             {

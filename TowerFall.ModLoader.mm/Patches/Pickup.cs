@@ -16,6 +16,7 @@ namespace TowerFall
             // no-op
         }
         public static Dictionary<int, Type> ModPickupTypes = new Dictionary<int, Type>();
+        public static Dictionary<int, string> ModPickupNames = new Dictionary<int, string>();
         public static Dictionary<int, Type> ModArrowPickupTypes = new Dictionary<int, Type>();
         public static Type[] ModPickupArgs = new Type[] { typeof(Vector2), typeof(Vector2), typeof(int) };
         public static extern Pickup orig_CreatePickup(Vector2 position, Vector2 targetPosition, Pickups type, int playerIndex);

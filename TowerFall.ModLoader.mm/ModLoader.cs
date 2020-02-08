@@ -15,6 +15,7 @@ namespace TowerFall.ModLoader.mm
 {
     public class ModLoader
     {
+        public readonly static Version ModfallVersion = new Version(0, 5);
         public readonly static Type[] _EmptyTypeArray = new Type[0];
         public readonly static object[] _EmptyObjectArray = new object[0];
         /// <summary>
@@ -40,7 +41,6 @@ namespace TowerFall.ModLoader.mm
             {
                 types = asm.GetTypes();
             }
-            
             catch (Exception e)
             {
                 Logger.Log($"Failed reading assembly: {e}");
@@ -90,18 +90,19 @@ namespace TowerFall.ModLoader.mm
             {
                 Logger.Log("[Modfall] Reading blacklist.txt");
                 string text = File.ReadAllText(Path.Combine(PathMods, "blacklist.txt"));
-                string[] lines = text.Trim().Split(';');
+                string[] lines = text.Trim().Split('\n');
                 foreach (string line in lines)
                 {
-                    if (!line.Trim().StartsWith("#"))
+                    string lineTrim = line.Trim().Trim(';');
+                    if (!lineTrim.StartsWith("#"))
                     {
-                        Blacklist.Add(Path.Combine(PathMods, line.Trim()));
+                        Blacklist.Add(Path.Combine(PathMods, lineTrim));
                     }
                 }
             } else
             {
                 Logger.Log("[Modfall] Creating blacklist.txt");
-                string text = $"# This is the blacklist. Type in the names of directories you don't want to load mods from here, seperated by ; {Environment.NewLine}# Lines starting with # are ignored, though they still need to end with ;";
+                string text = $"# This is the blacklist. Type in the names of directories you don't want to load mods from here, seperated by a new line {Environment.NewLine}# Lines starting with # are ignored.";
                 File.WriteAllText(Path.Combine(PathMods, "blacklist.txt"), text);
             }
             Logger.Log("[Modfall] Loading Mods");
@@ -146,31 +147,65 @@ namespace TowerFall.ModLoader.mm
                 Mods.Add(mod);
             }
             // Graphics
-            // Atlases
-            string atlasPath = Path.Combine(path, "Content", "Atlases");
-            if (Directory.Exists(atlasPath))
+            string graphicsPath = Path.Combine(path, "Content", "Graphics");
+            if (Directory.Exists(graphicsPath))
             {
-                foreach(string file in Directory.GetFiles(atlasPath))
+                // Files directly in the Graphics/ folder
+                foreach (string file in Directory.GetFiles(graphicsPath))
                 {
-                    if (file.EndsWith(".xml"))
+                    AddSprite(file);
+                }
+                // files in subfolders
+                foreach (string dir in Directory.GetDirectories(graphicsPath))
+                {
+                    foreach (string file in Directory.GetFiles(dir))
                     {
-                        Logger.Log("[Modfall] Adding Atlas: " + Path.GetFileNameWithoutExtension(file));
-                        ModAtlas.ModAtlases.Add(Path.GetFileNameWithoutExtension(file), new ModAtlas(path, file));
+                        AddSprite(file);
                     }
-                        
+                }
+
+                void AddSprite(string spritePath)
+                {
+                    if (spritePath.EndsWith(".png"))
+                    {
+                        string virtualPath = spritePath.Substring(graphicsPath.Length + 1);
+                        virtualPath = virtualPath.Remove(virtualPath.Length - 4, 4).Replace('\\', '/');
+                        Texture texture = new Texture(spritePath, true);
+                        Logger.Log($"[Modfall] Adding sprite {virtualPath}");
+                        if (TFGame.Atlas.SubTextures.ContainsKey(virtualPath))
+                        {
+                            TFGame.Atlas.SubTextures[virtualPath] = new Subtexture(texture);
+                        } else
+                        {
+                            TFGame.Atlas.SubTextures.Add(virtualPath, new Subtexture(texture));
+                        }
+                    }
+                    
                 }
             }
+            // Atlases
+            string atlasPath = Path.Combine(path, "Content", "Atlases");
             // SpriteData
             string spriteDataPath = Path.Combine(atlasPath, "SpriteData");
             if (Directory.Exists(spriteDataPath))
             {
                 foreach (string file in Directory.GetFiles(spriteDataPath))
                 {
-                    Logger.Log("[Modfall] Adding SpriteData: " + Path.GetFileNameWithoutExtension(file));
                     if (file.EndsWith(".xml"))
-                        //ModAtlas.ModAtlases.Add(Path.GetFileNameWithoutExtension(file), new ModAtlas(path, file));
-                        ModSpriteData.ModSpriteDatas.Add(Path.GetFileNameWithoutExtension(file), new ModSpriteData(path, file));
-                    
+                    {
+                        Logger.Log("[Modfall] Loading SpriteData: " + Path.GetFileNameWithoutExtension(file));
+                        XmlNode xmlNode = Calc.LoadXML(file);
+
+                        foreach (object obj in xmlNode["SpriteData"])
+                        {
+                            if (obj is XmlElement)
+                            {
+                                string id = (obj as XmlElement).Attr("id");
+                                Logger.Log($"[Modfall] Adding sprite {id} to SpriteData");
+                                ((patch_SpriteData)TFGame.SpriteData).Add(id, obj as XmlElement);
+                            }
+                        }
+                    }
                 }
             }
         }

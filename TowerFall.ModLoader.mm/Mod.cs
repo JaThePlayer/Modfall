@@ -33,26 +33,47 @@ namespace TowerFall.ModLoader.mm
             ModArrow.ModArrowColorsB.Add(index, colorB);
             Array.Resize(ref patch_Arrow.Colors, patch_Arrow.Colors.Length + 1);
             patch_Arrow.Colors[patch_Arrow.Colors.Length - 1] = color;
+            patch_EnemyArrowHUD.modImages.Add(HUDTexture);
             return index;
         }
 
-        public int RegisterPickup(Type PickupType, bool isArrowPickup = false)
+        public int RegisterPickup(Type PickupType, string name, bool isArrowPickup = false)
         {
             int index = patch_Pickup.ModPickupTypes.Count + 21;
-            Logger.Log($"[Modfall] Registering Pickup: {PickupType.FullName} as index {index}");
+            Logger.Log($"[Modfall] Registering Pickup: {name} as index {index}");
             patch_Pickup.ModPickupTypes.Add(index, PickupType);
+            patch_Pickup.ModPickupNames.Add(index, name);
             if (isArrowPickup)
             {
-                Logger.Log($"[Modfall] Registering Arrow Pickup: {PickupType.FullName} as index {index}");
+                Logger.Log($"[Modfall] Registering Arrow Pickup: {name} as index {index}");
                 patch_Pickup.ModArrowPickupTypes.Add(index, PickupType);
             }
             return index;
+        }
+
+        [Obsolete("Use RegisterPickup(Type, string, bool) instead")]
+        public int RegisterPickup(Type PickupType, bool isArrowPickup = false)
+        {
+            return RegisterPickup(PickupType, PickupType.FullName, isArrowPickup);
         }
 
         public void RegisterVariant(Variant variant)
         {
             Logger.Log($"[Modfall] Registering Variant: {variant.Title}");
             patch_MatchVariants.ModVariants.Add(variant);
+        }
+
+        public void RegisterEnemy(Type type, string name)
+        {
+            Logger.Log($"[Modfall] Registering Enemy: {name}");
+            if (patch_QuestSpawnPortal.CustomEnemies.ContainsKey(name))
+            {
+                Logger.Log($"[Modfall] Enemy {name} is already registered! Replacing!");
+                patch_QuestSpawnPortal.CustomEnemies[name] = type;
+            } else
+            {
+                patch_QuestSpawnPortal.CustomEnemies.Add(name, type);
+            }
         }
     }
 }
