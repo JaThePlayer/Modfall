@@ -10,7 +10,14 @@ A mod loader for the game TowerFall Ascension, powered by Monomod (https://githu
 - Adding new Co-Op maps
 - Converting .tower maps to .oel for Co-Op maps
 
-# Installing the mod loader
+# Installation
+
+Installer:
+
+Download the newest release of Modfall.CmdInstaller (https://github.com/JaThePlayer/Modfall.CmdInstaller/releases), run the .exe and follow the instructions that appear.
+
+Manual:
+
 Drop the files from the MonoMod directory and the TowerFall.ModLoader.mm.dll into your Towerfall directory, then in cmd/terminal/whatever type in these two commands:
 
 MonoMod.exe TowerFall.exe
