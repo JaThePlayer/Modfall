@@ -8,7 +8,10 @@ A mod loader for the game TowerFall Ascension, powered by Monomod (https://githu
 - Adding new arrow types
 - Adding new pickups
 - Adding new Co-Op maps
+- Adding new Co-Op enemies
 - Converting .tower maps to .oel for Co-Op maps
+
+Be sure to check out the wiki (https://github.com/JaThePlayer/Modfall/wiki) to see how you can use this these features.
 
 # Installation
 
