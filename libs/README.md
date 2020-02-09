@@ -1,0 +1,1 @@
+The TowerFall.exe file was stripped of code using mono-cil-strip. It contains no code.
