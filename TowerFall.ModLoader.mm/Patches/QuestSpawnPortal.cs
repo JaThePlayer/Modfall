@@ -5,6 +5,7 @@ using MonoMod;
 using Monocle;
 using TowerFall.ModLoader.mm;
 
+#pragma warning disable CS0649
 namespace TowerFall
 {
     class patch_QuestSpawnPortal : QuestSpawnPortal

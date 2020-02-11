@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Monocle;
 using MonoMod;
 
+#pragma warning disable CS0108
+
 namespace TowerFall
 {
     class patch_MapButton : MapButton

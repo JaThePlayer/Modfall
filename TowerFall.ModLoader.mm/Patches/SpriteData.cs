@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Xml;
 using MonoMod;
 
+#pragma warning disable CS0649
+
 namespace Monocle
 {
     class patch_SpriteData : SpriteData

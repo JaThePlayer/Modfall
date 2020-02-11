@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TowerFall.ModLoader.mm;
 
+#pragma warning disable CS0108
+
 namespace TowerFall
 {
     class patch_TreasureSpawner : TreasureSpawner

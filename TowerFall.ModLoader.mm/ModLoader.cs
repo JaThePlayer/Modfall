@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Reflection;
-using System.Text;
 using System.Xml;
-using Mono;
 using Monocle;
-using TowerFall;
 
 namespace TowerFall.ModLoader.mm
 {
     public class ModLoader
     {
-        public readonly static Version ModfallVersion = new Version(0, 5);
+        public readonly static Version ModfallVersion = new Version(1, 0);
         public readonly static Type[] _EmptyTypeArray = new Type[0];
         public readonly static object[] _EmptyObjectArray = new object[0];
         /// <summary>
@@ -171,7 +166,7 @@ namespace TowerFall.ModLoader.mm
                         string virtualPath = spritePath.Substring(graphicsPath.Length + 1);
                         virtualPath = virtualPath.Remove(virtualPath.Length - 4, 4).Replace('\\', '/');
                         Texture texture = new Texture(spritePath, true);
-                        Logger.Log($"[Modfall] Adding sprite {virtualPath}");
+                        Logger.Log($"[Modfall] Adding graphic {virtualPath}");
                         if (TFGame.Atlas.SubTextures.ContainsKey(virtualPath))
                         {
                             TFGame.Atlas.SubTextures[virtualPath] = new Subtexture(texture);
@@ -262,5 +257,140 @@ namespace TowerFall.ModLoader.mm
 
             return data;
         }
+
+        public static bool CheckForModfallUpdate()
+        {
+            if (UpdateAvailable)
+            {
+                return true;
+            }
+            if (UpdateChecked)
+            {
+                return false;
+            }
+            string url = "https://api.github.com/repos/JaThePlayer/Modfall/releases/latest";
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+           | (SecurityProtocolType)768//.Tls11
+           | (SecurityProtocolType)3072//.Tls12
+           | SecurityProtocolType.Ssl3;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
+            try {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    /*
+                    example response:
+                    {
+                        "url": "https://api.github.com/repos/JaThePlayer/Modfall/releases/23506762",
+                        "assets_url": "https://api.github.com/repos/JaThePlayer/Modfall/releases/23506762/assets",
+                        "upload_url": "https://uploads.github.com/repos/JaThePlayer/Modfall/releases/23506762/assets{?name,label}",
+                        "html_url": "https://github.com/JaThePlayer/Modfall/releases/tag/v0.5b",
+                        "id": 23506762,
+                        "node_id": "MDc6UmVsZWFzZTIzNTA2NzYy",
+                        "tag_name": "v0.5b",
+                        ...
+                        we want the tag_name
+                    */
+                    string res;
+                    using (Stream stream = response.GetResponseStream())
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        res = reader.ReadToEnd();
+                    }
+                    string tagName = res.Split(new string[] { "\"tag_name\": " }, StringSplitOptions.None)[1];
+                    tagName = tagName.Remove(tagName.IndexOf(',')).Trim().Trim('"').TrimStart('v').TrimEnd('b');
+                    Version version = new Version(tagName);
+                    if (version > ModfallVersion)
+                    {
+                        Logger.Log($"[Modfall] [Update Check] New version available!");
+                        UpdateAvailable = true;
+                        NewestVersion = version;
+                        return true;
+                    }
+                }
+            } catch (Exception e)
+            {
+                Logger.Log($"[Modfall] Update Check failed!");
+                Logger.Log($"{e.Message}\n{e.StackTrace}");
+                UpdateChecked = true;
+            }
+            UpdateChecked = true;
+            return false;
+        }
+
+        
+        private static bool UpdateChecked;
+        public static Version NewestVersion = ModfallVersion;
+        private static bool UpdateAvailable;
+
+        public static bool CheckForModUpdate(ModData data)
+        {
+            if (ModUpdates.ContainsKey(data.Name))
+            {
+                return true;
+            }
+            if (data.GithubLink == null)
+            {
+                return false;
+            }
+            string url = $"https://api.github.com/repos/{data.GithubLink.Replace("https://", "").Replace("github.com/", "")}/releases/latest";
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+           | (SecurityProtocolType)768//.Tls11
+           | (SecurityProtocolType)3072//.Tls12
+           | SecurityProtocolType.Ssl3;
+            Logger.Log($"[Modfall] [Mod Update] Connecting to {url}");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
+
+            try
+            {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    string res;
+                    using (Stream stream = response.GetResponseStream())
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        res = reader.ReadToEnd();
+                    }
+                    string tagName = res.Split(new string[] { "\"tag_name\": " }, StringSplitOptions.None)[1];
+                    tagName = tagName.Remove(tagName.IndexOf(',')).Trim().Trim('"').TrimStart('v').TrimEnd('b');
+                    Version version = new Version(tagName);
+                    Version curVersion = new Version(data.Version);
+                    if (version > curVersion)
+                    {
+                        Logger.Log($"[Modfall] [Mod Update] New version for mod {data.Name} available!");
+                        string download = res.Split(new string[] { "\"browser_download_url\": " }, StringSplitOptions.None)[1];
+                        Update update = new Update()
+                        {
+                            NewVersion = version,
+                            OldVersion = curVersion,
+                            Name = data.Name,
+                            DownloadUrl = download.Remove(download.IndexOf('}')).Trim().Trim('"')
+                        };
+                        ModUpdates.Add(data.Name, update);
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"[Modfall] Update Check for mod {data.Name} failed!");
+                Logger.Log($"{e.Message}\n{e.StackTrace}");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// modName, Update
+        /// </summary>
+        public static Dictionary<string, Update> ModUpdates = new Dictionary<string, Update>();
+    }
+
+    public struct Update
+    {
+        public Version NewVersion;
+        public Version OldVersion;
+        public string DownloadUrl;
+        public string Name;
     }
 }

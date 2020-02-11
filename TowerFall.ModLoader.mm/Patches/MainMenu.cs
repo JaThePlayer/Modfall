@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,34 +14,10 @@ using MonoMod;
 using TowerFall.ModLoader.mm;
 
 #pragma warning disable CS0626 // orig_ method is marked external and has no attributes on it.
+#pragma warning disable CS0108
 
 namespace TowerFall
 {
-    /*
-    // The patch_ class is in the same namespace as the original class.
-    // This can be bypassed by placing it anywhere else and using [MonoModPatch("global::Celeste.Player")]
-
-    // Visibility defaults to "internal", which hides your patch from runtime mods.
-    // If you want to "expose" new members to runtime mods, create extension methods in a public static class PlayerExt
-    class patch_Player : Player
-    { // : Player lets us reuse any of its visible members without redefining them.
-
-        public patch_Player(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, HatStates hatState, bool frozen, bool flash, bool indicator)
-            : base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen, flash, indicator)
-        {
-            // no-op. MonoMod ignores this - we only need this to make the compiler shut up.
-        }
-
-        // MonoMod creates a copy of the original method, called orig_Added.
-        public extern void orig_Jump(bool particles, bool canSuper, bool forceSuper, int ledgeDir, bool doubleJump);
-        public new void Jump(bool particles, bool canSuper, bool forceSuper, int ledgeDir, bool doubleJump)
-        {
-            
-            orig_Jump(particles, canSuper, forceSuper, ledgeDir, doubleJump);
-            Speed.Y -= 10f;
-        }
-    }
-    */
     class patch_MainMenu : MainMenu
     {
         public patch_MainMenu(MenuState state) : base(state)
@@ -71,24 +51,91 @@ namespace TowerFall
         /// </summary>
         public void CreateNone()
         {
-            /*
-            Draw.SpriteBatch.Begin();
-            //Draw.Rect(0, 0, 320, 240, Color.LightBlue);
-            //Draw.Text(TFGame.Font, "MODFALL: V0.1", new Vector2(0f, 10f), Color.White);
-            Draw.Text(TFGame.Font, "MOD LIST:", new Vector2(0f, 20f), Color.White);
-            float nextHeight = 30f;
+            BackState = MenuState.Main;
+            float nextHeight = 50f;
             foreach (Mod mod in ModLoader.mm.ModLoader.Mods)
             {
-                Draw.Text(TFGame.Font, $"{mod.Name.ToUpper()} V{mod.Version.ToUpper()}", new Vector2(0f, nextHeight), Color.White);
                 nextHeight += 10f;
             }
-            Draw.SpriteBatch.End(); */
-            BackState = MenuState.Main;
-            //testImage = new Image(ModAtlas.ModAtlases["EpicAtlas"]["yay"]);
 
-            
+            if (ModLoader.mm.ModLoader.CheckForModfallUpdate())
+            {
+                nextHeight += 15f;
+                if (updateModfallButton == null)
+                {
+                    updateModfallButton = new BladeButton(nextHeight, "UPDATE", delegate
+                    {
+                        string args = $"-v n -exe \"{Path.Combine(ModLoader.mm.ModLoader.PathGame, "TowerFall.exe")}\"";
+                        Logger.Log($"[Modfall] Updating to version {ModLoader.mm.ModLoader.NewestVersion}");
+                        Process.Start(Path.Combine(ModLoader.mm.ModLoader.PathGame, "Modfall.CmdInstaller.exe"), args);
+                        Engine.Instance.Exit();
+                    });
+                    updateModfallButton.Visible = true;
+                    updateModfallButton.Selected = true;
+
+                }
+            }
+            nextHeight += 15f;
+            modOptionsButtons = new List<BladeButton>();
+            modOptionsButtons.Add(new BladeButton(nextHeight, "MOD UPDATES", delegate
+            {
+                inModUpdateScreen = true;
+                
+                foreach (BladeButton button in modOptionsButtons)
+                {
+                    if (button != null)
+                    {
+                        button.Visible = false;
+                        button.Selected = false;
+                    }
+                }
+                foreach (Mod mod in ModLoader.mm.ModLoader.Mods)
+                {
+                    ModLoader.mm.ModLoader.CheckForModUpdate(mod.Data);
+                    
+                }
+                float nextH = 60f;
+                modUpdateButtons = new List<BladeButton>();
+                foreach (Update update in ModLoader.mm.ModLoader.ModUpdates.Values)
+                {
+                    modUpdateButtons.Add(new BladeButton(nextH, update.Name.ToUpper(), delegate
+                    {
+                        string args = $"-mod {update.DownloadUrl} \"{ModLoader.mm.ModLoader.ModPaths[update.Name]}\"";
+                        Logger.Log($"[Modfall] Updating mod {update.Name} to {update.NewVersion}");
+                        Process.Start(Path.Combine(ModLoader.mm.ModLoader.PathGame, "Modfall.CmdInstaller.exe"), args);
+                        Engine.Instance.Exit();
+                    }));
+                    nextH += 20f;
+                }
+                if (modUpdateButtons.Count > 0)
+                {
+                    modUpdateButtons[0].Selected = true;
+                    for (int i = 0; i < modUpdateButtons.Count; i++)
+                    {
+                        if (i > 0)
+                        {
+                            modUpdateButtons[i].UpItem = modUpdateButtons[i - 1];
+                        }
+                        if (i + 1 < modUpdateButtons.Count)
+                        {
+                            modUpdateButtons[i].DownItem = modUpdateButtons[i + 1];
+                        }
+                    }
+                }
+            }));
+            if (updateModfallButton != null)
+            {
+                updateModfallButton.DownItem = modOptionsButtons[0];
+                modOptionsButtons[0].UpItem = updateModfallButton;
+            }
+            else
+            {
+                modOptionsButtons[0].Selected = true;
+            }
+            nextHeight += 10f;
         }
 
+        static bool inModUpdateScreen;
         public void DestroyNone()
         {
 
@@ -217,18 +264,72 @@ namespace TowerFall
                 Draw.Text(TFGame.Font, $"{ModLoader.mm.ModLoader.Errors.Count} MODS FAILED LOADING!", new Vector2(0f, 30f), Color.Red);
             }
 
+            // Mod Settings
             if (State == MenuState.None)
             {
-                Draw.Text(TFGame.Font, "MOD LIST:", new Vector2(0f, 40f), Color.White);
-                float nextHeight = 50f;
-                foreach (Mod mod in ModLoader.mm.ModLoader.Mods)
+                if (inModUpdateScreen)
                 {
-                    Draw.Text(TFGame.Font, $"{mod.Data.Name.ToUpper()} V{mod.Data.Version.ToUpper()}", new Vector2(0f, nextHeight), Color.White);
-                    nextHeight += 10f;
+                    List<Update> updates = ModLoader.mm.ModLoader.ModUpdates.Values.ToList();
+                    Draw.Text(TFGame.Font, "MOD UPDATES:", new Vector2(0f, 40f), Color.White);
+                    //foreach (BladeButton button in modUpdateButtons)
+                    for (int i = 0; i < modUpdateButtons.Count; i++)
+                    {
+                        BladeButton button = modUpdateButtons[i];
+                        button.Update();
+                        button.Render();
+                        Draw.Text(TFGame.Font, $"{updates[i].OldVersion} -> {updates[i].NewVersion}".ToUpper(), button.Position + Vector2.UnitX * 100f, Color.Yellow);
+                    }
+                } else
+                {
+                    Draw.Text(TFGame.Font, "MOD LIST:", new Vector2(0f, 40f), Color.White);
+                    float nextHeight = 50f;
+                    foreach (Mod mod in ModLoader.mm.ModLoader.Mods)
+                    {
+                        Draw.Text(TFGame.Font, $"{mod.Data.Name.ToUpper()} V{mod.Data.Version.ToUpper()}", new Vector2(0f, nextHeight), Color.White);
+                        nextHeight += 10f;
+                    }
+                    BackState = MenuState.Main;
+                    if (ModLoader.mm.ModLoader.CheckForModfallUpdate())
+                    {
+                        Draw.Text(TFGame.Font, $"NEW MODFALL VERSION AVAILABLE: {ModLoader.mm.ModLoader.NewestVersion.ToString().ToUpper()}", new Vector2(0f, nextHeight), Color.Yellow);
+                        nextHeight += 15f;
+                        if (updateModfallButton == null)
+                        {
+                            updateModfallButton = new BladeButton(nextHeight, "UPDATE", delegate
+                            {
+                                string args = $"-v n -exe \"{Path.Combine(ModLoader.mm.ModLoader.PathGame, "TowerFall.exe")}\"";
+                                Logger.Log($"[Modfall] Updating to version {ModLoader.mm.ModLoader.NewestVersion}");
+                                Process.Start(Path.Combine(ModLoader.mm.ModLoader.PathGame, "Modfall.CmdInstaller.exe"), args);
+                                Engine.Instance.Exit();
+                            });
+                            updateModfallButton.Visible = true;
+                            updateModfallButton.Selected = true;
+
+                        }
+                        else
+                        {
+                            updateModfallButton.Update();
+                            updateModfallButton.Render();
+                        }
+                        nextHeight += 10f;
+                    }
+
+                    foreach (BladeButton button in modOptionsButtons)
+                    {
+                        button.Update();
+                        button.Render();
+                    }
                 }
-                BackState = MenuState.Main;
+            } else
+            {
+                inModUpdateScreen = false;
             }
+                
             Draw.SpriteBatch.End();
         }
+
+        static List<BladeButton> modOptionsButtons;
+        static List<BladeButton> modUpdateButtons;
+        BladeButton updateModfallButton;
     }
 }

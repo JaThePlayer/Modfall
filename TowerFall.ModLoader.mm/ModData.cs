@@ -18,6 +18,10 @@ namespace TowerFall.ModLoader.mm
         /// Path to the dll relative to mod root
         /// </summary>
         public string DLL;
+        /// <summary>
+        /// Link to the github repo for this mod
+        /// </summary>
+        public string GithubLink;
 
         public void SetValue(string name, string value)
         {
@@ -31,6 +35,9 @@ namespace TowerFall.ModLoader.mm
                     break;
                 case "version":
                     Version = value;
+                    break;
+                case "github":
+                    GithubLink = value;
                     break;
                 default:
                     Logger.Log($"[Modfall] Unknown ModData property: {name}");

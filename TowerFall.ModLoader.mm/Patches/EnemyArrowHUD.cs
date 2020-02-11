@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Monocle;
 using MonoMod;
 
+#pragma warning disable CS0626
 namespace TowerFall
 {
     class patch_EnemyArrowHUD : EnemyArrowHUD

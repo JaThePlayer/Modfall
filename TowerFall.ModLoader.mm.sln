@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowerFall.ModLoader.mm", "TowerFall.ModLoader.mm\TowerFall.ModLoader.mm.csproj", "{70E21825-D159-4573-8FBA-2839B238430E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modfall.CmdInstaller", "Modfall.CmdInstaller\Modfall.CmdInstaller.csproj", "{4BACC4DA-B992-4DA9-B73E-5F00EA2685AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{70E21825-D159-4573-8FBA-2839B238430E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70E21825-D159-4573-8FBA-2839B238430E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70E21825-D159-4573-8FBA-2839B238430E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BACC4DA-B992-4DA9-B73E-5F00EA2685AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BACC4DA-B992-4DA9-B73E-5F00EA2685AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BACC4DA-B992-4DA9-B73E-5F00EA2685AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BACC4DA-B992-4DA9-B73E-5F00EA2685AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
