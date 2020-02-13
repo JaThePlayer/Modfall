@@ -10,7 +10,7 @@ namespace TowerFall.ModLoader.mm
 {
     public class ModLoader
     {
-        public readonly static Version ModfallVersion = new Version(0, 6, 1);
+        public readonly static Version ModfallVersion = new Version(0, 7);
         public readonly static Type[] _EmptyTypeArray = new Type[0];
         public readonly static object[] _EmptyObjectArray = new object[0];
         /// <summary>
@@ -119,6 +119,12 @@ namespace TowerFall.ModLoader.mm
         {
             ModData modData = GetModData(path);
             string modName = modData.Name;
+            if (modData.MinVersion > ModfallVersion)
+            {
+                Logger.Log($"[Modfall] Mod {modName} requires a newer version of Modfall: {modData.MinVersion}");
+                Errors.Add($"{modName} requires a newer version of Modfall: {modData.MinVersion}");
+                return;
+            }
             Logger.Log($"[Modfall] Loading Mod: {modName}");
             ModPaths.Add(modName, path);
             ModPathsInv.Add(path, modName);
@@ -244,10 +250,14 @@ namespace TowerFall.ModLoader.mm
             else if (File.Exists(Path.Combine(modFolderPath, "modfall.xml")))
             {
                 XmlElement file = Calc.LoadXML(Path.Combine(modFolderPath, "modfall.xml"))["mod"];
-                foreach (XmlElement element in file.ChildNodes)
+                foreach (XmlNode node in file.ChildNodes)
                 {
-                    // Read each entry
-                    data.SetValue(element.Name.ToLower(), element.InnerText);
+                    if (node is XmlElement)
+                    {
+                        XmlElement element = (XmlElement)node;
+                        data.SetValue(element.Name.ToLower(), element.InnerText);
+                    }
+                    
                 }
             } else
             {

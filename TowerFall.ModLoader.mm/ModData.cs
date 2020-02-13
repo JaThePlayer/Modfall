@@ -23,9 +23,11 @@ namespace TowerFall.ModLoader.mm
         /// </summary>
         public string GithubLink;
 
+        public Version MinVersion;
+
         public void SetValue(string name, string value)
         {
-            switch (name)
+            switch (name.ToLower())
             {
                 case "name":
                     Name = value;
@@ -38,6 +40,9 @@ namespace TowerFall.ModLoader.mm
                     break;
                 case "github":
                     GithubLink = value;
+                    break;
+                case "minversion":
+                    MinVersion = new Version(value);
                     break;
                 default:
                     Logger.Log($"[Modfall] Unknown ModData property: {name}");

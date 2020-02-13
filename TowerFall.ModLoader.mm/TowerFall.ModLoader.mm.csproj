@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="Events.cs" />
     <Compile Include="Patches\Calc.cs" />
+    <Compile Include="Patches\Editor\ActorsLayerUI.cs" />
     <Compile Include="Patches\EnemyArrowHUD.cs" />
     <Compile Include="Patches\MapButton.cs" />
     <Compile Include="Patches\MapScene.cs" />

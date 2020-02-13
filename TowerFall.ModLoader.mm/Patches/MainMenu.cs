@@ -259,9 +259,10 @@ namespace TowerFall
             Draw.SpriteBatch.Begin();
             Draw.Text(TFGame.Font, $"MODFALL: {ModLoader.mm.ModLoader.ModfallVersion.ToString()}", new Vector2(0f, 10f), Color.White);
             Draw.Text(TFGame.Font, $"MODS LOADED: {ModLoader.mm.ModLoader.Mods.Count}", new Vector2(0f, 20f), Color.White);
-            if (ModLoader.mm.ModLoader.Errors.Count > 0)
+            int count = ModLoader.mm.ModLoader.Errors.Count;
+            if (count > 0)
             {
-                Draw.Text(TFGame.Font, $"{ModLoader.mm.ModLoader.Errors.Count} MODS FAILED LOADING!", new Vector2(0f, 30f), Color.Red);
+                Draw.Text(TFGame.Font, $"{count} MOD{(count > 1 ? "S" : "")} FAILED LOADING!", new Vector2(0f, 30f), Color.Red);
             }
 
             // Mod Settings
