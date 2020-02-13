@@ -57,7 +57,7 @@ namespace TowerFall
                 facing = ((X < 160f) ? Facing.Right : Facing.Left);
             }
             string text = toSpawn.Dequeue();
-            if (Events.QuestSpawnPortal.SpawnEnemy(text))
+            if (Events.QuestSpawnPortal.SpawnEnemy(Level, text, Position, facing, Nodes))
             {
 
             }

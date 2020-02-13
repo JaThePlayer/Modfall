@@ -10,7 +10,7 @@ namespace TowerFall.ModLoader.mm
 {
     public class ModLoader
     {
-        public readonly static Version ModfallVersion = new Version(0, 6);
+        public readonly static Version ModfallVersion = new Version(0, 6, 1);
         public readonly static Type[] _EmptyTypeArray = new Type[0];
         public readonly static object[] _EmptyObjectArray = new object[0];
         /// <summary>
