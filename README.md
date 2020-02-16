@@ -28,7 +28,7 @@ MonoMod.exe TowerFall.exe
 MonoMod.RuntimeDetour.HookGen.exe TowerFall.exe
 
 A MONOMODDED_TowerFall.exe should show up in your towerfall directory. Run it so it can create some files and directories.
-An automated installer will be made for this later.
+
 
 # Installing mods
 To install a mod, simply drop the mod's folder into the Towerfall/Mods/ directory.
