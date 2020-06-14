@@ -34,6 +34,8 @@ namespace TowerFall.ModLoader.mm
             ThemeName = tower.ChildText("tileset");
             Darkness = tower.ChildText("darkOpacity");
             BGTileset = tower.ChildText("bgtileset");
+            bool Cold = tower.ChildBool("cold");
+            string Tileset = tower.ChildText("tileset");
             // Read level data, we'll only worry about the first level
             XmlElement target = (XmlElement)tower.GetElementsByTagName("level")[0];
             BGstr = target.ChildText("BG");
@@ -56,7 +58,8 @@ namespace TowerFall.ModLoader.mm
             level.SetAttr("MiasmaH", "False");
             level.CreateChild("title").InnerText = Title;
             level.CreateChild("theme").InnerText = ThemeName;
-
+            level.CreateChild("tileset").InnerText = Tileset;
+            level.CreateChild("cold").InnerText = Cold.ToString();
             XmlElement bg = oel.CreateElement("BG");
             bg.SetAttr("exportMode", "Bitstring");
             bg.InnerText = BGstr;

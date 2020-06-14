@@ -2,6 +2,7 @@
 using Monocle;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -62,9 +63,8 @@ namespace TowerFall
                             data.Path = file2;
                             data.DataPath = Path.Combine(Path.GetDirectoryName(file2), Path.GetFileNameWithoutExtension(file2)) + "data.xml";
                             data.ID.X = id;
-
                             XmlElement xmlElement = Calc.LoadXML(data.Path)["level"];
-
+                            
                             // Theme preset
                             if (xmlElement.HasChild("theme"))
                             {
@@ -73,7 +73,20 @@ namespace TowerFall
                             {
                                 data.Theme = new TowerTheme(GameData.Themes["SacredGround"]);
                             }
-
+                            if (xmlElement.HasAttribute("Darkness"))
+                                data.Theme.DarknessOpacity = float.Parse(xmlElement.Attributes["Darkness"].InnerText, NumberFormatInfo.InvariantInfo);
+                            if (xmlElement.HasChild("darkColor"))
+                                data.Theme.DarknessColor = Calc.HexToColor(xmlElement.ChildText("darkColor"));
+                            if (xmlElement.HasChild("music"))
+                                data.Theme.Music = xmlElement.ChildText("music");
+                            if (xmlElement.HasChild("cold"))
+                                data.Theme.Cold = xmlElement.ChildBool("cold");
+                            if (xmlElement.HasChild("tileset"))
+                                data.Theme.Tileset = xmlElement.ChildText("tileset");
+                            if (xmlElement.HasChild("raining"))
+                                data.Theme.Raining = bool.Parse(xmlElement.ChildText("raining"));
+                            if (xmlElement.HasChild("mapPosition"))
+                                data.Theme.MapPosition = patch_Calc.StringToVec2(xmlElement.ChildText("mapPosition"));
                             // Build Icon
                             if (xmlElement.HasChild("icon"))
                             {
@@ -90,7 +103,16 @@ namespace TowerFall
                             {
                                 data.Theme.Name = Path.GetFileNameWithoutExtension(file2).ToUpper() + " - " + ModLoader.mm.ModLoader.ModPathsInv[file].ToUpper();
                             }
-
+                            // Music
+                            /*
+                            if (xmlElement.HasChild("music"))
+                                data.Theme.Music = xmlElement.ChildText("music");
+                            if (data.Theme.Music == "Custom")
+                            {
+                                this.customMusicData = new CustomMusicData(xmlElement["custommusic"]);
+                                data.Theme.Music 
+                            }
+                            */
                             Array.Resize(ref GameData.QuestLevels, id+1);
                             Array.Resize(ref SaveData.Instance.Quest.Towers, id+1);
                             

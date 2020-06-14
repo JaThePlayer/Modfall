@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TowerFall;
@@ -33,6 +35,33 @@ namespace Monocle
                 throw new Exception($"Pickup {str} not registered!");
             }
             throw new Exception("The string cannot be converted to the enum type.");
+        }
+
+        // new
+        /// <summary>
+        /// Converts a string formatted as x,y to a Vector2
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static Vector2 StringToVec2(string str)
+        {
+            string[] split = str.Split(',');
+            return new Vector2(float.Parse(split[0]), float.Parse(split[1]));
+        }
+
+        public static Delegate GetMethod<T>(object obj, string method) where T : class
+        {
+            if (obj.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) == null)
+            {
+                // Check the base class as well, for custom enemy classes extending vanilla enemy classes
+                MethodInfo baseMethod = obj.GetType().BaseType.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (baseMethod == null) {
+                    return null;
+                } else {
+                    Delegate.CreateDelegate(typeof(T), obj, baseMethod);
+                }
+            }
+            return Delegate.CreateDelegate(typeof(T), obj, method);
         }
     }
 }

@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events.cs" />
-    <Compile Include="Patches\Calc.cs" />
+    <Compile Include="Patches\Monocle\Calc.cs" />
     <Compile Include="Patches\Editor\ActorsLayerUI.cs" />
     <Compile Include="Patches\EnemyArrowHUD.cs" />
     <Compile Include="Patches\MapButton.cs" />
@@ -89,11 +89,13 @@
     <Compile Include="Patches\MainMenu.cs" />
     <Compile Include="NullMod.cs" />
     <Compile Include="Patches\MatchVariants.cs" />
+    <Compile Include="Patches\Monocle\SFX.cs" />
     <Compile Include="Patches\Pickup.cs" />
     <Compile Include="Patches\QuestLevelData.cs" />
     <Compile Include="Patches\QuestLevelSelectOverlay.cs" />
     <Compile Include="Patches\QuestSpawnPortal.cs" />
     <Compile Include="Patches\ScreenTitle.cs" />
+    <Compile Include="Patches\Sounds.cs" />
     <Compile Include="Patches\SpriteData.cs" />
     <Compile Include="Patches\TFGame.cs" />
     <Compile Include="Patches\TreasureChest.cs" />

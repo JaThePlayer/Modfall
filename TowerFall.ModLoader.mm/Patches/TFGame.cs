@@ -22,8 +22,6 @@ namespace TowerFall
             // to make the compiler shut up
         }
 
-        public static Atlas[] ModAtlases;
-
         public extern void orig_ctor(bool noIntro);
         [MonoModConstructor]
         public void ctor(bool noIntro)

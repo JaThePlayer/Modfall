@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Xml;
+using Ionic.Zip;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 
 namespace TowerFall.ModLoader.mm
@@ -54,31 +58,122 @@ namespace TowerFall.ModLoader.mm
             }
         }
 
+
+        public static void DumpTextures()
+        {
+            // Dump textures
+            Logger.Log("[Modfall] Dumping Textures");
+            string dumpDir = Path.Combine(PathGame, "DUMP", "Sprites");
+            Directory.CreateDirectory(dumpDir);
+            Directory.CreateDirectory(Path.Combine(dumpDir, "Atlas"));
+            foreach (KeyValuePair<string, Subtexture> subtexture in TFGame.Atlas.SubTextures)
+            {
+                Dump(subtexture, Path.Combine(dumpDir, "Atlas"));
+            }
+            foreach (KeyValuePair<string, Subtexture> subtexture in TFGame.BGAtlas.SubTextures)
+            {
+                Dump(subtexture, Path.Combine(dumpDir, "BGAtlas"));
+            }
+            foreach (KeyValuePair<string, Subtexture> subtexture in TFGame.BossAtlas.SubTextures)
+            {
+                Dump(subtexture, Path.Combine(dumpDir, "BossAtlas"));
+            }
+            foreach (KeyValuePair<string, Subtexture> subtexture in TFGame.MenuAtlas.SubTextures)
+            {
+                Dump(subtexture, Path.Combine(dumpDir, "MenuAtlas"));
+            }
+
+            if (GameData.DarkWorldDLC)
+            {
+                foreach (KeyValuePair<string, Subtexture> subtexture in TFGame.EditorAtlas.SubTextures)
+                {
+                    Dump(subtexture, Path.Combine(dumpDir, "EditorAtlas"));
+                }
+            }
+
+            void Dump(KeyValuePair<string, Subtexture> subtexture, string targetDir)
+            {
+                Subtexture texture = subtexture.Value;
+                Rectangle sourceRectangle = texture.Rect;
+                Texture2D cropTexture = new Texture2D(TFGame.Instance.GraphicsDevice, texture.Width, texture.Height);
+                Color[] data = new Color[texture.Width * texture.Height];
+                texture.Texture2D.GetData(0, sourceRectangle, data, 0, data.Length);
+                cropTexture.SetData(data);
+                string dir = Path.Combine(targetDir, Path.GetDirectoryName(subtexture.Key));
+                Directory.CreateDirectory(dir);
+                Stream stream = File.Create(Path.Combine(targetDir, $"{subtexture.Key}.png"));
+                cropTexture.SaveAsPng(stream, cropTexture.Width, cropTexture.Height);
+                stream.Dispose();
+                cropTexture.Dispose();
+                GC.Collect();
+            }
+        }
+
         static List<string> Blacklist = new List<string>();
         public static void LoadMods()
         {
             Directory.CreateDirectory(PathMods = Path.Combine(PathGame, "Mods")); // Make sure it exists before mods get loaded
 
-            string settingsFile = Path.Combine(PathGame, "modLoaderSettings.txt");
-            if (File.Exists(settingsFile))
+            string settingsFile = Path.Combine(PathGame, "modLoaderSettings.xml");
+            string settingsFileTxt = Path.Combine(PathGame, "modLoaderSettings.txt");
+            string fileVer = "1";
+            if (File.Exists(settingsFileTxt))
             {
-                string text = File.ReadAllText(settingsFile);
+                string text = File.ReadAllText(settingsFileTxt);
                 string[] lines = text.Trim().Split(';');
                 foreach (string line in lines)
                 {
                     string[] vals = line.Split(':');
-                    switch(vals[0].Trim())
+                    switch (vals[0].Trim())
                     {
                         case "LogToFile":
                             ModLoaderSettings.LogToFile = bool.Parse(vals[1].Trim());
                             break;
+                        case "DumpTextures":
+                            DumpTextures();
+                            break;
+                    }
+                }
+                File.Delete(settingsFileTxt);
+                Logger.Log("[Modfall] Creating modLoaderSettings.xml");
+                XmlDocument doc = new XmlDocument();
+                XmlElement settings = doc.CreateElement("settings");
+                doc.AppendChild(settings);
+                settings.CreateChild("fileVer").InnerText = fileVer;
+                settings.CreateChild("logToFile").InnerText = ModLoaderSettings.LogToFile.ToString();
+                settings.CreateChild("dumpTextures").InnerText = "false";
+                doc.Save(settingsFile);
+            }
+            if (File.Exists(settingsFile))
+            {
+                XmlElement settings = Calc.LoadXML(settingsFile)["settings"];
+                foreach (XmlNode node in settings)
+                {
+                    if (node is XmlElement)
+                    {
+                        switch (node.Name)
+                        {
+                            case "logToFile":
+                                ModLoaderSettings.LogToFile = bool.Parse(node.InnerText);
+                                break;
+                            case "dumpTextures":
+                                if (bool.Parse(node.InnerText))
+                                    DumpTextures();
+                                break;
+                        }
                     }
                 }
             } else
             {
-                Logger.Log("[Modfall] Creating modLoaderSettings.txt");
-                string text = $"LogToFile:true;";
-                File.WriteAllText(settingsFile, text);
+                Logger.Log("[Modfall] Creating modLoaderSettings.xml");
+                XmlDocument doc = new XmlDocument();
+                XmlElement settings = doc.CreateElement("settings");
+                doc.AppendChild(settings);
+                settings.CreateChild("fileVer").InnerText = fileVer;
+                settings.CreateChild("logToFile").InnerText = "true";
+                settings.CreateChild("dumpTextures").InnerText = "false";
+                doc.Save(settingsFile);
+                //File.WriteAllText(settingsFile, text);
             }
 
             if (File.Exists(Path.Combine(PathMods, "blacklist.txt")))
@@ -100,6 +195,18 @@ namespace TowerFall.ModLoader.mm
                 string text = $"# This is the blacklist. Type in the names of directories you don't want to load mods from here, seperated by a new line {Environment.NewLine}# Lines starting with # are ignored.";
                 File.WriteAllText(Path.Combine(PathMods, "blacklist.txt"), text);
             }
+            Logger.Log("[Modfall] Extracting mod .zip files");
+            foreach (string modPath in Directory.GetFiles(PathMods))
+            {
+                if (modPath.EndsWith(".zip") && !Blacklist.Contains(modPath))
+                {
+                    ZipFile zip = ZipFile.Read(modPath);
+                    zip.ExtractAll(Path.Combine(Path.GetDirectoryName(modPath), Path.GetFileNameWithoutExtension(modPath)));
+                    zip.Dispose();
+                    File.Delete(modPath);
+                }
+            }
+
             Logger.Log("[Modfall] Loading Mods");
             foreach (string modPath in Directory.GetDirectories(PathMods))
             {
@@ -133,7 +240,9 @@ namespace TowerFall.ModLoader.mm
             {
                 try
                 {
-                    LoadModAssembly(Assembly.LoadFile(Path.Combine(path, modData.DLL) + ".dll"), modData);
+                    Assembly asm = Assembly.LoadFile(Path.Combine(path, modData.DLL) + ".dll");
+                    
+                    LoadModAssembly(asm, modData);
                 }
                 catch (Exception ex)
                 {
@@ -151,6 +260,7 @@ namespace TowerFall.ModLoader.mm
             string graphicsPath = Path.Combine(path, "Content", "Graphics");
             if (Directory.Exists(graphicsPath))
             {
+                /*
                 // Files directly in the Graphics/ folder
                 foreach (string file in Directory.GetFiles(graphicsPath))
                 {
@@ -163,7 +273,8 @@ namespace TowerFall.ModLoader.mm
                     {
                         AddSprite(file);
                     }
-                }
+                } */
+                Crawl(graphicsPath, delegate (string s) { AddSprite(s); });
 
                 void AddSprite(string spritePath)
                 {
@@ -171,7 +282,7 @@ namespace TowerFall.ModLoader.mm
                     {
                         string virtualPath = spritePath.Substring(graphicsPath.Length + 1);
                         virtualPath = virtualPath.Remove(virtualPath.Length - 4, 4).Replace('\\', '/');
-                        Texture texture = new Texture(spritePath, true);
+                        Monocle.Texture texture = new Monocle.Texture(spritePath, true);
                         Logger.Log($"[Modfall] Adding graphic {virtualPath}");
                         if (TFGame.Atlas.SubTextures.ContainsKey(virtualPath))
                         {
@@ -190,7 +301,8 @@ namespace TowerFall.ModLoader.mm
             string spriteDataPath = Path.Combine(atlasPath, "SpriteData");
             if (Directory.Exists(spriteDataPath))
             {
-                foreach (string file in Directory.GetFiles(spriteDataPath))
+                //foreach (string file in Directory.GetFiles(spriteDataPath))
+                Crawl(spriteDataPath, delegate (string file)
                 {
                     if (file.EndsWith(".xml"))
                     {
@@ -207,12 +319,38 @@ namespace TowerFall.ModLoader.mm
                             }
                         }
                     }
-                }
+                });
+            }
+            // SFX
+            string SFXPath = Path.Combine(path, "Content", "SFX");
+            if (Directory.Exists(SFXPath))
+            {
+                Crawl(SFXPath, delegate (string file)
+                {
+                    string virtualPath = file.Substring(SFXPath.Length + 1);
+                    int extLength = Path.GetExtension(virtualPath).Length;
+                    virtualPath = virtualPath.Remove(virtualPath.Length - extLength, extLength).Replace('\\', '/');
+                    Logger.Log($"[Modfall] Adding SFX {virtualPath}");
+                    SFX sfx = new SFX(file);
+                    patch_Sounds.ModSFX.Add(virtualPath, sfx);
+                });
+            }
+        }
+        
+        public static void Crawl(string dir, Action<string> onFile)
+        {
+            foreach (string file in Directory.GetFiles(dir))
+            {
+                onFile(file);
+            }
+            foreach (string dir2 in Directory.GetDirectories(dir))
+            {
+                Crawl(dir2, onFile);
             }
         }
 
         /// <summary>
-        /// read the modfall.txt file
+        /// read the modfall.xml file
         /// </summary>
         /// <param name="modFolderPath"></param>
         /// <returns></returns>

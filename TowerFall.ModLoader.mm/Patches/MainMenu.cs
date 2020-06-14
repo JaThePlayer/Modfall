@@ -132,7 +132,23 @@ namespace TowerFall
             {
                 modOptionsButtons[0].Selected = true;
             }
-            nextHeight += 10f;
+            nextHeight += 15f;
+            //modOptionsButtons.Add(new BladeButton(nextHeight, "DUMP SPRITES", delegate
+            //{
+            //    ModLoader.mm.ModLoader.DumpTextures();
+            //}));
+            //nextHeight += 15f;
+            for (int i = 0; i < modOptionsButtons.Count; i++)
+            {
+                if (i > 0)
+                {
+                    modOptionsButtons[i].UpItem = modOptionsButtons[i - 1];
+                }
+                if (i + 1 < modOptionsButtons.Count)
+                {
+                    modOptionsButtons[i].DownItem = modOptionsButtons[i + 1];
+                }
+            }
         }
 
         static bool inModUpdateScreen;

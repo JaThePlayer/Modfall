@@ -56,7 +56,19 @@ namespace Modfall.MiniInstaller
                         i++;
                         string oldModDir = args[i].Trim('"');
                         Console.WriteLine($"Deleting {oldModDir}...");
-                        Directory.Delete(oldModDir, true);
+                        Delete:
+                        try
+                        {
+                            Directory.Delete(oldModDir, true);
+                        }
+                        catch
+                        {
+                            // Some files were still locked, try again later
+                            Console.WriteLine("Couldn't delete some files, trying again in 1 second...");
+                            Thread.Sleep(1000);
+                            goto Delete;
+                        }
+                        
                         Console.WriteLine($"Downloading from {ModDownloadUrl}");
                         ExecuteCommandSilent($"curl -L -o mod.zip {ModDownloadUrl}");
                         Console.WriteLine("Unzipping...");
@@ -209,7 +221,7 @@ namespace Modfall.MiniInstaller
         public static void RunMonomod()
         {
             ExecuteCommand($"{Path.Combine("Temp", "MonoMod.exe")} {Path.Combine("Temp", ExeFileName)}");
-            ExecuteCommand($"{Path.Combine("Temp", "MonoMod.RuntimeDetour.HookGen.exe")} {Path.Combine("Temp", ExeFileName)}");
+            ExecuteCommand($"{Path.Combine("Temp", "MonoMod.RuntimeDetour.HookGen.exe --private")} {Path.Combine("Temp", ExeFileName)}");
         }
 
         public static void DisplayHelp()

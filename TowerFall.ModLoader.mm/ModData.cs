@@ -23,6 +23,9 @@ namespace TowerFall.ModLoader.mm
         /// </summary>
         public string GithubLink;
 
+        /// <summary>
+        /// Minimum version of Modfall required to load this mod
+        /// </summary>
         public Version MinVersion;
 
         public void SetValue(string name, string value)
